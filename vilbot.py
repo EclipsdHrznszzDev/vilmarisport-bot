@@ -12,7 +12,8 @@ WEB_APP_URL = "https://vilmariofficial.ru/vilmarisport" # Ссылка на тв
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# --- ФИКТИВНЫЙ ВЕБ-СЕРВЕР (ЧТОБЫ RENDER НЕ РУГАЛСЯ) ---
+
+# --- ФИКТИВНЫЙ ВЕБ-СЕРВЕР (ОБЯЗАТЕЛЬНО ДЛЯ RENDER) ---
 class MyHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -25,6 +26,7 @@ def run_web_server():
     with socketserver.TCPServer(("", port), MyHandler) as httpd:
         print(f"🌐 Web server started on port {port}")
         httpd.serve_forever()
+
 
 # --- КЛАВИАТУРЫ ---
 
@@ -49,8 +51,7 @@ async def start_command(message: types.Message):
     name = message.from_user.first_name
     text = f"Привет, {name}!\n\n|                  Выберите раздел:                  |"
 
-    # Включаем статус "печатает..." на 1.5 секунды
-    await asyncio.sleep(1.5) # Пауза
+
     
     await message.answer(
         text=text,
@@ -83,8 +84,16 @@ async def process_callback_back(callback_query: types.CallbackQuery):
     )
     await callback_query.answer()
 
+
+# --- ГЛАВНАЯ ФУНКЦИЯ ---
 async def main():
-    print("Бот запущен...")
+    # 1. ЗАПУСКАЕМ СЕРВЕР В ОТДЕЛЬНОМ ПОТОКЕ (Этого не хватало!)
+    server_thread = threading.Thread(target=run_web_server)
+    server_thread.daemon = True
+    server_thread.start()
+    
+    # 2. ЗАПУСКАЕМ БОТА
+    print("✅ Бот запущен и готов к работе!")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
