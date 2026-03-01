@@ -1,12 +1,30 @@
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
 import asyncio
+import http.server
+import socketserver
+import os
+import threading
 
 TOKEN = "8646189608:AAEl-cQB3IZS3dQDDH785yLV53ex_pSgSFE"
 WEB_APP_URL = "https://vilmariofficial.ru/vilmarisport" # Ссылка на твой магазин
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
+
+# --- ФИКТИВНЫЙ ВЕБ-СЕРВЕР (ЧТОБЫ RENDER НЕ РУГАЛСЯ) ---
+class MyHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write(b'Bot is running!')
+
+def run_web_server():
+    port = int(os.environ.get('PORT', 8080))
+    with socketserver.TCPServer(("", port), MyHandler) as httpd:
+        print(f"🌐 Web server started on port {port}")
+        httpd.serve_forever()
 
 # --- КЛАВИАТУРЫ ---
 
